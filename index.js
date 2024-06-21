@@ -311,7 +311,11 @@ io.on('connection', (socket) => {
 
     socket.on('findRoom', (roomId) => {
         const requiredRoom = rooms.find(room => room.id === roomId);
-        io.in(requiredRoom.id).emit('foundRoom', requiredRoom);
+        if (requiredRoom) {
+            io.in(requiredRoom.id).emit('foundRoom', requiredRoom);
+        } else {
+            socket.emit('invalidOperation', 'Room not found');
+        }
     })
 
     socket.on('leave-room', (data) => handleLeaveRoom(socket, data));
@@ -333,6 +337,7 @@ io.on('connection', (socket) => {
     socket.on('declineMatch', (roomId) => handleDecline(socket, roomId));
 
     socket.on('disconnect', () => {
+        handleCancelFindMatch(socket);
         socket.disconnect()
         console.log(`🔥: ${socket.id} disconnected`);
     });
